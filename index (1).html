@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ruta Mahou ★★★★★ | Málaga</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800;9..144,900&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Mapa interactivo ligero para la vista de chat -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <style>
+    :root {
+      --mahou-red: #C8102E;
+      --mahou-dark-red: #9E0B22;
+      --cream-bg: #F9F6F0;
+      --cream-card: #F2ECE1;
+      --sand-map: #DFC5A4;
+      --text-dark: #231F20;
+      --wa-header: #075E54;
+      --wa-bg: #EFEAE2;
+      --wa-bubble: #FFFFFF;
+      --wa-green: #25D366;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #181818;
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 440px;
+      background-color: var(--cream-bg);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ================= VISTA 1: PORTADA GRÁFICA RUTA MAHOU ================= */
+    .landing-view {
+      padding: 16px 18px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+    }
+
+    .hero-pin-wrapper {
+      position: relative;
+      width: 155px;
+      height: 185px;
+      margin-top: 2px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      z-index: 2;
+    }
+
+    .hero-pin-svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 10px 16px rgba(200, 16, 46, 0.28));
+    }
+
+    .spain-graphic {
+      width: 100%;
+      max-width: 330px;
+      margin-top: -38px;
+      margin-bottom: 2px;
+      z-index: 1;
+    }
+
+    .title-ruta {
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: 3px;
+      color: var(--text-dark);
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .title-mahou {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 58px;
+      color: var(--mahou-red);
+      line-height: 0.92;
+      letter-spacing: -1.5px;
+      margin: 2px 0 6px;
+    }
+
+    .stars-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 300px;
+      margin: 4px 0;
+    }
+
+    .stars-divider .line {
+      height: 1.5px;
+      background-color: var(--text-dark);
+      flex: 1;
+      opacity: 0.5;
+    }
+
+    .stars-divider .stars {
+      color: var(--mahou-red);
+      font-size: 15px;
+      letter-spacing: 4px;
+    }
+
+    .subtitle-claim {
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 1.3px;
+      color: var(--text-dark);
+      margin-bottom: 14px;
+    }
+
+    /* Caja Principal de Acción */
+    .cta-box {
+      width: 100%;
+      background: #FFFFFF;
+      border: 2px solid var(--mahou-red);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 8px 22px rgba(200, 16, 46, 0.14);
+      margin-bottom: 14px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--mahou-red);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 14px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 13.5px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+      background: var(--mahou-dark-red);
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .btn-secondary {
+      background: var(--cream-card);
+      color: var(--text-dark);
+      border: 1.5px solid #d5c7b4;
+      border-radius: 10px;
+      padding: 10px 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .btn-secondary:active {
+      background: #e5dac8;
+    }
+
+    /* Selector rápido de zonas de Málaga para Demo */
+    .zone-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed #e0d6c8;
+    }
+
+    .zone-label {
+      width: 100%;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #6d635b;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 2px;
+    }
+
+    .zone-pill {
+      background: #F9F6F0;
+      border: 1px solid #d4c6b4;
+      color: var(--text-dark);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .zone-pill:hover {
+      background: var(--mahou-red);
+      color: #fff;
+      border-color: var(--mahou-red);
+    }
+
+    /* Bloque inferior estilo cartel original: QR + 3 pasos */
+    .bottom-poster-card {
+      width: 100%;
+      background: var(--cream-card);
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      border: 1px solid #e3d7c6;
+    }
+
+    .qr-badge-box {
+      background: #FFFFFF;
+      border-radius: 14px;
+      padding: 8px;
+      width: 102px;
+      flex-shrink: 0;
+      text-align: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .qr-badge-box:hover {
+      border-color: var(--mahou-red);
+    }
+
+    .qr-badge-title {
+      font-weight: 800;
+      font-size: 9px;
+      color: var(--text-dark);
+      letter-spacing: 0.5px;
+    }
+
+    .qr-badge-brand {
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 15px;
+      color: var(--mahou-red);
+      line-height: 1;
+    }
+
+    .qr-badge-stars {
+      color: var(--mahou-red);
+      font-size: 7px;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .qr-badge-cta {
+      background: var(--mahou-red);
+      color: #FFFFFF;
+      font-size: 7.5px;
+      font-weight: 800;
+      padding: 4px 3px;
+      border-radius: 6px;
+      margin-top: 4px;
+      line-height: 1.1;
+    }
+
+    .steps-vertical {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .step-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--mahou-red);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-text strong {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .step-text span {
+      font-size: 9.5px;
+      color: #5a524c;
+      line-height: 1.2;
+      display: block;
+    }
+
+    .loader {
+      display: none;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--mahou-red);
+      margin-top: 8px;
+    }
+
+
+    /* ================= MODAL PERMISO GPS EXPLÍCITO ================= */
+    .gps-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      z-index: 998;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .gps-card {
+      background: #FFFFFF;
+      width: 100%;
+      max-width: 360px;
+      border-radius: 22px;
+      padding: 22px 20px;
+      text-align: center;
+      border: 2.5px solid var(--mahou-red);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+      animation: popIn 0.2s ease-out;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .gps-icon-circle {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: #FFF1F3;
+      border: 2px solid var(--mahou-red);
+      color: var(--mahou-red);
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .gps-card h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .gps-card p {
+      font-size: 12.5px;
+      color: #544d47;
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .gps-error-box {
+      display: none;
+      background: #FFF4E5;
+      border: 1px solid #F5C26B;
+      color: #7A4B00;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 9px 10px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      line-height: 1.35;
+      text-align: left;
+    }
+
+    .gps-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* ================= MODAL ESCÁNER QR REAL ================= */
+    .qr-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #FFFFFF;
+      text-align: center;
+    }
+
+    .scanner-frame {
+      width: 260px;
+      height: 260px;
+      border: 3px solid var(--mahou-red);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      background: #000;
+      margin: 16px 0;
+      box-shadow: 0 0 30px rgba(200,16,46,0.5);
+    }
+
+    .scanner-frame video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .scan-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--mahou-red);
+      box-shadow: 0 0 12px #ff2a4b;
+      animation: scanAnim 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes scanAnim {
+      0% { top: 10%; }
+      100% { top: 90%; }
+    }
+
+    /* ================= VISTA 2: ASISTENTE WHATSAPP RUTA MAHOU ================= */
+    .chat-view {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      background-color: var(--wa-bg);
+    }
+
+    .wa-topbar {
+      background-color: var(--wa-header);
+      color: #FFFFFF;
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+
+    .wa-back {
+      background: rgba(255,255,255,0.16);
+      border: none;
+      color: #FFFFFF;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .wa-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--mahou-red);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 0.9;
+      border: 1.5px solid #FFFFFF;
+      flex-shrink: 0;
+    }
+
+    .wa-avatar span {
+      font-family: sans-serif;
+      font-size: 6px;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .wa-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .wa-name {
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      background: #25D366;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .wa-status {
+      font-size: 11px;
+      opacity: 0.88;
+    }
+
+    .wa-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 12px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background-image: radial-gradient(#d5cec2 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: #D9FDD3;
+      color: #111B21;
+      padding: 8px 13px;
+      border-radius: 12px 0 12px 12px;
+      font-size: 12.5px;
+      max-width: 85%;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    }
+
+    .msg-bot {
+      align-self: flex-start;
+      background: var(--wa-bubble);
+      color: #111B21;
+      padding: 12px;
+      border-radius: 0 14px 14px 14px;
+      font-size: 13px;
+      width: 96%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.14);
+    }
+
+    .msg-bot-header {
+      font-weight: 600;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    /* Mapa interactivo dentro del chat */
+    #realMap {
+      width: 100%;
+      height: 165px;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #dcd6ca;
+      z-index: 1;
+    }
+
+    /* Filtros dentro del chat */
+    .chat-filters {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #f0ece4;
+    }
+
+    .filter-chip {
+      background: #F4F1EA;
+      border: 1px solid #ddd4c5;
+      border-radius: 16px;
+      padding: 5px 10px;
+      font-size: 10.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      color: var(--text-dark);
+    }
+
+    .filter-chip.active {
+      background: var(--mahou-red);
+      color: #FFFFFF;
+      border-color: var(--mahou-red);
+    }
+
+    .bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bar-card {
+      border-bottom: 1px solid #f0ece4;
+      padding-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bar-card:last-child {
+      border-bottom: none;
+    }
+
+    .bar-details {
+      flex: 1;
+    }
+
+    .bar-title {
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .bar-address {
+      font-size: 11px;
+      color: #54656F;
+      margin-top: 2px;
+    }
+
+    .bar-tag {
+      display: inline-block;
+      margin-top: 4px;
+      background: #FFF1F3;
+      color: var(--mahou-red);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .bar-go-btn {
+      background: var(--mahou-red);
+      color: #FFFFFF;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .msg-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: #667781;
+      font-weight: 400;
+    }
+
+    .btn-volver-inicio {
+      width: 100%;
+      margin-top: 12px;
+      background: #F9F6F0;
+      color: #C8102E;
+      border: 1.5px solid #C8102E;
+      border-radius: 10px;
+      padding: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Barra inferior interactiva real */
+    .wa-input-bar {
+      background: #F0F2F5;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wa-real-input {
+      flex: 1;
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 9px 14px;
+      font-size: 12.5px;
+      color: #111B21;
+      border: 1px solid #e0e0e0;
+      outline: none;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .wa-send-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--wa-header);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ==================== PANTALLA 1: CARTEL OFICIAL RUTA MAHOU ==================== -->
+  <div id="landingView" class="landing-view">
+    
+    <!-- Pin Rojo Mahou -->
+    <div class="hero-pin-wrapper">
+      <svg class="hero-pin-svg" viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100 8 C48 8 10 47 10 96 C10 154 100 232 100 232 C100 232 190 154 190 96 C190 47 152 8 100 8 Z" fill="#C8102E"/>
+        <circle cx="100" cy="95" r="72" fill="#FFFFFF"/>
+        <text x="100" y="96" text-anchor="middle" fill="#C8102E" font-family="Fraunces, Georgia, serif" font-weight="900" font-size="37" letter-spacing="-1">Mahou</text>
+        <text x="100" y="122" text-anchor="middle" fill="#C8102E" font-size="15" letter-spacing="4">★★★★★</text>
+      </svg>
+    </div>
+
+    <!-- Silueta Mapa con Ruta Punteada -->
+    <svg class="spain-graphic" viewBox="0 0 360 165" xmlns="http://www.w3.org/2000/svg">
+      <path d="M45,32 L110,25 L185,39 L265,35 L315,52 L295,100 L245,142 L155,152 L85,146 L55,110 L38,72 Z" fill="#DFC5A4" opacity="0.85"/>
+      <path d="M45,39 L110,32 L185,46 L265,42 L315,59 L295,107 L245,149 L155,159 L85,153 L55,117 L38,79 Z" fill="#C4A47C" opacity="0.35"/>
+      <path d="M72,55 Q115,59 105,100 T142,130 T210,110 T255,72 T282,52" fill="none" stroke="#C8102E" stroke-width="2.5" stroke-dasharray="5,5"/>
+      <g fill="#C8102E">
+        <circle cx="72" cy="49" r="7"/><polygon points="66,52 78,52 72,63"/><circle cx="72" cy="49" r="2.5" fill="#fff"/>
+        <circle cx="105" cy="93" r="7"/><polygon points="99,96 111,96 105,107"/><circle cx="105" cy="93" r="2.5" fill="#fff"/>
+        <circle cx="142" cy="123" r="7"/><polygon points="136,126 148,126 142,137"/><circle cx="142" cy="123" r="2.5" fill="#fff"/>
+        <circle cx="210" cy="103" r="7"/><polygon points="204,106 216,106 210,117"/><circle cx="210" cy="103" r="2.5" fill="#fff"/>
+        <circle cx="255" cy="65" r="7"/><polygon points="249,68 261,68 255,79"/><circle cx="255" cy="65" r="2.5" fill="#fff"/>
+        <circle cx="282" cy="45" r="7"/><polygon points="276,48 288,48 282,59"/><circle cx="282" cy="45" r="2.5" fill="#fff"/>
+      </g>
+    </svg>
+
+    <div class="title-ruta">RUTA</div>
+    <div class="title-mahou">Mahou</div>
+
+    <div class="stars-divider">
+      <div class="line"></div>
+      <div class="stars">★★★★★</div>
+      <div class="line"></div>
+    </div>
+
+    <div class="subtitle-claim">TU PRÓXIMA MAHOU FRESQUITA TE ESPERA</div>
+
+    <!-- Caja Interactiva Principal -->
+    <div class="cta-box">
+      <button class="btn-primary" onclick="buscarConGPS()">
+        <span>📍</span> CONECTAR MI GPS Y BUSCAR BARES
+      </button>
+
+      <div class="action-row">
+        <button class="btn-secondary" onclick="abrirEscanerQR()">
+          <span>📷</span> Escanear QR
+        </button>
+        <button class="btn-secondary" onclick="simularZona('centro', 36.7196, -4.4216, 'Calle Larios, Centro')">
+          <span>⚡</span> Demo Málaga Centro
+        </button>
+      </div>
+
+      <div class="zone-pills">
+        <div class="zone-label">O prueba ubicaciones en Málaga:</div>
+        <button class="zone-pill" onclick="simularZona('centro', 36.7230, -4.4205, 'C/ Comedias y Beatas')">Comedias / Beatas</button>
+        <button class="zone-pill" onclick="simularZona('centro', 36.7196, -4.4216, 'Calle Larios')">Centro</button>
+        <button class="zone-pill" onclick="simularZona('teatinos', 36.7198, -4.4784, 'Teatinos')">Teatinos</button>
+        <button class="zone-pill" onclick="simularZona('churriana', 36.6625, -4.5042, 'Churriana')">Churriana</button>
+        <button class="zone-pill" onclick="simularZona('nuevamalaga', 36.7268, -4.4425, 'Nueva Málaga')">Nueva Málaga</button>
+        <button class="zone-pill" onclick="simularZona('campanillas', 36.7335, -4.5448, 'Campanillas')">Campanillas</button>
+      </div>
+
+      <div id="loaderMsg" class="loader">Conectando satélite GPS y calculando metros...</div>
+    </div>
+
+    <!-- Bloque Inferior estilo cartel original (QR + Pasos 1-2-3) -->
+    <div class="bottom-poster-card">
+      <div class="qr-badge-box" onclick="abrirEscanerQR()" title="Toca para abrir cámara escáner QR">
+        <div class="qr-badge-title">RUTA</div>
+        <div class="qr-badge-brand">Mahou</div>
+        <div class="qr-badge-stars">★★★★★</div>
+        <!-- QR REAL VERIFICADO Y ESCANEABLE -->
+        <img src="data:image/png;base64,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" alt="QR Ruta Mahou" style="width:74px;height:74px;display:block;margin:0 auto;border-radius:4px;" />
+        <div class="qr-badge-cta">ESCANEA O PULSA AQUÍ</div>
+      </div>
+
+      <div class="steps-vertical">
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>ESCANEA EL QR</strong>
+            <span>Activa la cámara o comparte tu GPS al instante.</span>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>TE RESPONDEMOS AL MOMENTO</strong>
+            <span>Locales más cercanos con Mahou fresquita.</span>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>DISFRUTA TU MAHOU FRESQUITA</strong>
+            <span>Localiza, acércate con Google Maps y brinda.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL PERMISO GPS EXPLÍCITO ==================== -->
+  <div id="gpsModal" class="gps-modal">
+    <div class="gps-card">
+      <div class="gps-icon-circle">📍</div>
+      <h3>¿Puedo activar tu GPS?</h3>
+      <p>
+        Para decirte exactamente a cuántos metros tienes tu próxima <strong>Mahou fresquita</strong>, necesitamos acceder a la ubicación de tu teléfono.
+      </p>
+      <div id="gpsErrorBox" class="gps-error-box"></div>
+      <div class="gps-btn-group">
+        <button id="btnConfirmarGPS" class="btn-primary" onclick="confirmarYActivarGPS()">
+          ✓ Sí, activar mi GPS ahora
+        </button>
+        <button class="btn-secondary" onclick="usarUbicacionDemoDesdeModal()">
+          ⚡ Probar sin GPS (Málaga Centro)
+        </button>
+        <button onclick="cerrarModalGPS()" style="background:none;border:none;color:#777;font-size:11.5px;font-weight:700;padding:6px;cursor:pointer;">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL ESCÁNER QR CON CÁMARA REAL ==================== -->
+  <div id="qrModal" class="qr-modal">
+    <h3 style="font-size:18px; font-weight:800;">Escáner QR Ruta Mahou</h3>
+    <p style="font-size:12px; opacity:0.85; margin-top:4px;">Apunta la cámara al código QR de la mesa o cartel</p>
+    <div class="scanner-frame">
+      <video id="qrVideo" playsinline autoplay muted></video>
+      <canvas id="qrCanvas" style="display:none;"></canvas>
+      <div class="scan-line"></div>
+    </div>
+    <p id="qrStatusText" style="font-size:12px; font-weight:700; color:#ffd1d8; margin-bottom:12px;">Buscando código QR...</p>
+    <div style="background:#fff;color:#231F20;padding:8px 12px;border-radius:12px;display:flex;align-items:center;gap:10px;margin-bottom:14px;max-width:300px;">
+      <img src="data:image/png;base64,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" style="width:48px;height:48px;" alt="QR"/>
+      <div style="text-align:left;font-size:10px;line-height:1.3;">
+        <strong>QR Oficial Ruta Mahou</strong><br>
+        Enfócalo con la cámara de este escáner o con la cámara normal de otro móvil.
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-primary" style="padding:10px 16px; font-size:12px;" onclick="simularLecturaQR()">
+        ✓ Simular QR Escaneado
+      </button>
+      <button class="btn-secondary" style="padding:10px 16px; font-size:12px;" onclick="cerrarEscanerQR()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== PANTALLA 2: ASISTENTE RUTA MAHOU (ESTILO WHATSAPP) ==================== -->
+  <div id="chatView" class="chat-view">
+    <div class="wa-topbar">
+      <button class="wa-back" onclick="volverPortada()" title="Volver a pantalla de inicio Mahou">
+        ← Inicio
+      </button>
+      <div class="wa-avatar">
+        m
+        <span>★★★★★</span>
+      </div>
+      <div class="wa-info">
+        <div class="wa-name">Ruta Mahou <span class="verified-badge">✓</span></div>
+        <div class="wa-status" id="locationModeLabel">Asistente de Mahou • Málaga</div>
+      </div>
+    </div>
+
+    <div class="wa-messages" id="waMessagesScroll">
+      <div class="msg-user" id="userBubbleText">
+        📍 Ubicación compartida
+      </div>
+
+      <div class="msg-bot">
+        <div class="msg-bot-header" id="botGreetingText">
+          ¡Hola! 👋<br>
+          Aquí tienes los locales más cercanos donde disfrutar tu <strong>Mahou fresquita</strong>:
+        </div>
+
+        <!-- Mapa Interactivo Real -->
+        <div id="realMap"></div>
+
+        <!-- Filtros rápidos dentro de WhatsApp -->
+        <div class="chat-filters">
+          <button class="filter-chip active" id="chipTodos" onclick="filtrarLista('todos')">Todos los bares (33)</button>
+          <button class="filter-chip" id="chipRosarios" onclick="filtrarLista('rosario')">Rosario's (7)</button>
+          <button class="filter-chip" id="chipCentro" onclick="filtrarLista('centro')">Centro / Beatas / Comedias</button>
+        </div>
+
+        <!-- Lista dinámica de bares ordenados por distancia -->
+        <div id="barsContainer" class="bar-list"></div>
+
+        <div class="msg-footer">
+          <span>¡Salud! 🍻</span>
+          <span class="msg-time" id="currentTime">12:30 ✓✓</span>
+        </div>
+
+        <button onclick="volverPortada()" class="btn-volver-inicio">
+          ← VOLVER A LA PANTALLA DE INICIO MAHOU
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra real para escribir nombre de bar o zona -->
+    <div class="wa-input-bar">
+      <input type="text" id="chatSearchInput" class="wa-real-input" placeholder="Buscar bar, Rosario's o calle..." onkeyup="buscarPorTexto(event)" />
+      <button class="wa-send-btn" onclick="ejecutarBusquedaChat()">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // BASE DE DATOS AMPLIADA DE BARES EN MÁLAGA (TODOS CON EL MISMO ESTILO VISUAL)
+  const BARES_MALAGA = [
+    // --- LOCALES ROSARIO'S CASUAL FOOD EN MÁLAGA (7) ---
+    {
+      nombre: "Rosario's Casual Food (Teatinos)",
+      direccion: "Av. Plutarco, 61 • Teatinos",
+      zona: "teatinos",
+      esRosario: true,
+      lat: 36.7198,
+      lon: -4.4784,
+      especialidad: "Local Oficial Mahou • Terraza & Grifo"
+    },
+    {
+      nombre: "Rosario's Casual Food (Churriana)",
+      direccion: "Camino Nuevo / Centro • Churriana",
+      zona: "churriana",
+      esRosario: true,
+      lat: 36.6625,
+      lon: -4.5042,
+      especialidad: "Local Oficial Mahou • Burgers & Cañas"
+    },
+    {
+      nombre: "Rosario's Casual Food (Nueva Málaga)",
+      direccion: "C/ Magistrado Salvador Barberá • Nueva Málaga",
+      zona: "nuevamalaga",
+      esRosario: true,
+      lat: 36.7268,
+      lon: -4.4425,
+      especialidad: "Local Oficial Mahou • Terraza & Grifo"
+    },
+    {
+      nombre: "Rosario's Casual Food (Campanillas)",
+      direccion: "C/ José Calderón • Campanillas",
+      zona: "campanillas",
+      esRosario: true,
+      lat: 36.7335,
+      lon: -4.5448,
+      especialidad: "Local Oficial Mahou • Burgers & Tercios"
+    },
+    {
+      nombre: "Rosario's Casual Food (Soho / Centro)",
+      direccion: "C/ Casas de Campos, 15 • Soho",
+      zona: "soho",
+      esRosario: true,
+      lat: 36.7161,
+      lon: -4.4228,
+      especialidad: "Local Oficial Mahou • Burgers & Cañas"
+    },
+    {
+      nombre: "Rosario's Casual Food (Huelin)",
+      direccion: "Paseo Antonio Machado • Huelin",
+      zona: "huelin",
+      esRosario: true,
+      lat: 36.7042,
+      lon: -4.4355,
+      especialidad: "Local Oficial Mahou • Terraza"
+    },
+    {
+      nombre: "Rosario's Casual Food (El Palo / Pedregalejo)",
+      direccion: "Av. Juan Sebastián Elcano • Málaga Este",
+      zona: "pedregalejo",
+      esRosario: true,
+      lat: 36.7215,
+      lon: -4.3655,
+      especialidad: "Local Oficial Mahou • Frente al mar"
+    },
+
+    // --- 10 BARES EN CALLE COMEDIAS, CALLE BEATAS Y CALLE GRANADA ---
+    {
+      nombre: "Bar La Comedia",
+      direccion: "C/ Comedias, 15 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7232,
+      lon: -4.4218,
+      especialidad: "Copas y Mahou nocturna • C/ Comedias"
+    },
+    {
+      nombre: "Mezé Comedias",
+      direccion: "C/ Comedias, 15 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7233,
+      lon: -4.4217,
+      especialidad: "Tapeo y cañas • C/ Comedias"
+    },
+    {
+      nombre: "The Garrison Tavern Pub",
+      direccion: "C/ Comedias, 10 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7229,
+      lon: -4.4219,
+      especialidad: "Pub & Cervezas • C/ Comedias"
+    },
+    {
+      nombre: "BUENO Café",
+      direccion: "C/ Comedias, 20 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7236,
+      lon: -4.4216,
+      especialidad: "Terraza y aperitivo • C/ Comedias"
+    },
+    {
+      nombre: "Los Patios de Beatas",
+      direccion: "C/ Beatas, 43 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7231,
+      lon: -4.4192,
+      especialidad: "Tapeo gourmet y Mahou • C/ Beatas"
+    },
+    {
+      nombre: "Tapería El Beato",
+      direccion: "C/ Beatas, 3 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7224,
+      lon: -4.4209,
+      especialidad: "Tapas tradicionales • C/ Beatas"
+    },
+    {
+      nombre: "La Esquinita de la Gamba",
+      direccion: "C/ Beatas, 19 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7227,
+      lon: -4.4202,
+      especialidad: "Marisco y cañas frías • C/ Beatas"
+    },
+    {
+      nombre: "Taberna El Carpintero",
+      direccion: "C/ Beatas, 32 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7229,
+      lon: -4.4197,
+      especialidad: "Taberna clásica • C/ Beatas"
+    },
+    {
+      nombre: "Rocking Beatas",
+      direccion: "C/ Beatas, 39 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7230,
+      lon: -4.4194,
+      especialidad: "Bar musical & Mahou • C/ Beatas"
+    },
+    {
+      nombre: "La Quintonería Majareta",
+      direccion: "C/ Granada, 28 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7219,
+      lon: -4.4199,
+      especialidad: "Quintos helados y montaditos"
+    },
+
+    // --- RESTO DEL CENTRO HISTÓRICO DE MÁLAGA ---
+    {
+      nombre: "Bodegas Quitapenas",
+      direccion: "C/ Marín García, 4 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7204,
+      lon: -4.4219,
+      especialidad: "Grifo Mahou Cinco Estrellas"
+    },
+    {
+      nombre: "Casa Lola",
+      direccion: "C/ Granada, 46 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7224,
+      lon: -4.4193,
+      especialidad: "Tercios helados + Tapas"
+    },
+    {
+      nombre: "El Pimpi",
+      direccion: "C/ Granada, 62 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7228,
+      lon: -4.4184,
+      especialidad: "Terraza y Grifo Oficial"
+    },
+    {
+      nombre: "Antigua Casa de Guardia",
+      direccion: "Alameda Principal, 18 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7183,
+      lon: -4.4234,
+      especialidad: "Barra clásica Málaga"
+    },
+    {
+      nombre: "La Taberna del Obispo",
+      direccion: "Plaza del Obispo, 3 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7202,
+      lon: -4.4201,
+      especialidad: "Vistas Catedral • Mahou Maestra"
+    },
+    {
+      nombre: "Cervecería Los Gatos",
+      direccion: "Plaza de Uncibay, 9 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7235,
+      lon: -4.4206,
+      especialidad: "Cañas tiradas a presión"
+    },
+    {
+      nombre: "La Tranca",
+      direccion: "C/ Carretería, 92 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7247,
+      lon: -4.4222,
+      especialidad: "Ambiente castizo • Mahou"
+    },
+    {
+      nombre: "Taberna El Mentidero",
+      direccion: "C/ Sánchez Pastor, 12 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7212,
+      lon: -4.4208,
+      especialidad: "Tapas y Mahou bien fría"
+    },
+    {
+      nombre: "Bodega Bar El Pimpi Florida",
+      direccion: "C/ Zegrí, 4 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7225,
+      lon: -4.4179,
+      especialidad: "Rincón clásico • Mahou"
+    },
+    {
+      nombre: "Cervecería 100 Montaditos Larios",
+      direccion: "C/ Strachan, 11 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7201,
+      lon: -4.4211,
+      especialidad: "Jarras heladas Mahou"
+    },
+    {
+      nombre: "Mesón Lo Güeno",
+      direccion: "C/ Marín García, 9 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7206,
+      lon: -4.4221,
+      especialidad: "Raciones y Grifo Cinco Estrellas"
+    },
+    {
+      nombre: "La Cosmopolita",
+      direccion: "C/ José Denis Belgrano, 3 • Centro",
+      zona: "centro",
+      esRosario: false,
+      lat: 36.7218,
+      lon: -4.4204,
+      especialidad: "Gastronomía malagueña • Mahou"
+    },
+
+    // --- SOHO, TEATINOS Y PEDREGALEJO ---
+    {
+      nombre: "La Fábrica de Cerveza Soho",
+      direccion: "C/ Trinidad Grund, 29 • Soho",
+      zona: "soho",
+      esRosario: false,
+      lat: 36.7155,
+      lon: -4.4238,
+      especialidad: "Experiencia cervecera • Soho"
+    },
+    {
+      nombre: "Cambara Muelle Uno",
+      direccion: "Paseo del Muelle Uno, Local 6",
+      zona: "soho",
+      esRosario: false,
+      lat: 36.7176,
+      lon: -4.4139,
+      especialidad: "Terraza Puerto • Mahou Maestra"
+    },
+    {
+      nombre: "Cervecería La Sureña Teatinos",
+      direccion: "Av. Plutarco, 55 • Teatinos",
+      zona: "teatinos",
+      esRosario: false,
+      lat: 36.7192,
+      lon: -4.4765,
+      especialidad: "Cubos de botellines Mahou"
+    },
+    {
+      nombre: "El Caleño Pedregalejo",
+      direccion: "Paseo Marítimo el Pedregal, 49",
+      zona: "pedregalejo",
+      esRosario: false,
+      lat: 36.7214,
+      lon: -4.3692,
+      especialidad: "Espetos y Mahou helada"
+    }
+  ];
+
+  let currentLat = 36.7196;
+  let currentLon = -4.4216;
+  let currentFilter = 'todos';
+  let mapInstance = null;
+  let markersLayer = null;
+  let qrStream = null;
+  let qrScanInterval = null;
+
+  // Auto-activación si llegan desde el QR escaneado con la cámara nativa del teléfono (?scan=1)
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('scan') === '1') {
+      buscarConGPS();
+    }
+  });
+
+  // Cálculo matemático de distancia real (Fórmula Haversine)
+  function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
+    const R = 6371e3;
+    const p1 = lat1 * Math.PI / 180;
+    const p2 = lat2 * Math.PI / 180;
+    const dp = (lat2 - lat1) * Math.PI / 180;
+    const dl = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(dp / 2) * Math.sin(dp / 2) +
+              Math.cos(p1) * Math.cos(p2) *
+              Math.sin(dl / 2) * Math.sin(dl / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round(R * c);
+  }
+
+  function formatearDistancia(metros) {
+    if (metros < 1000) return `${metros} m`;
+    return `${(metros / 1000).toFixed(1)} km`;
+  }
+
+  function inicializarMapa(lat, lon, bares) {
+    if (!mapInstance) {
+      mapInstance = L.map('realMap', { zoomControl: false }).setView([lat, lon], 15);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(mapInstance);
+      markersLayer = L.layerGroup().addTo(mapInstance);
+    } else {
+      mapInstance.setView([lat, lon], 15);
+      markersLayer.clearLayers();
+    }
+
+    // Marcador azul del usuario
+    const userIcon = L.divIcon({
+      className: 'custom-user-pin',
+      html: `<div style="width:16px;height:16px;background:#1A73E8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 8px rgba(26,115,232,0.8);"></div>`,
+      iconSize: [16, 16]
+    });
+    L.marker([lat, lon], { icon: userIcon }).addTo(markersLayer).bindPopup("Tu ubicación");
+
+    // Marcadores rojos uniformes de Mahou para todos los locales
+    bares.forEach(bar => {
+      const mahouIcon = L.divIcon({
+        className: 'custom-mahou-pin',
+        html: `<div style="width:24px;height:24px;background:#C8102E;color:#fff;font-weight:900;font-family:serif;font-size:13px;border:2px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.35);">m</div>`,
+        iconSize: [24, 24]
+      });
+      L.marker([bar.lat, bar.lon], { icon: mahouIcon })
+        .addTo(markersLayer)
+        .bindPopup(`<strong>${bar.nombre}</strong><br>${formatearDistancia(bar.distancia)}`);
+    });
+
+    setTimeout(() => {
+      mapInstance.invalidateSize();
+    }, 200);
+  }
+
+  function renderizarBares(textoBusqueda = '') {
+    let lista = BARES_MALAGA.map(bar => {
+      const dist = calcularDistanciaMetros(currentLat, currentLon, bar.lat, bar.lon);
+      return { ...bar, distancia: dist };
+    }).sort((a, b) => a.distancia - b.distancia);
+
+    if (currentFilter === 'rosario') {
+      lista = lista.filter(b => b.esRosario);
+    } else if (currentFilter === 'centro') {
+      lista = lista.filter(b => b.zona === 'centro');
+    }
+
+    if (textoBusqueda.trim() !== '') {
+      const q = textoBusqueda.toLowerCase();
+      lista = lista.filter(b =>
+        b.nombre.toLowerCase().includes(q) ||
+        b.direccion.toLowerCase().includes(q) ||
+        b.zona.toLowerCase().includes(q)
+      );
+    } else if (currentFilter === 'todos') {
+      lista = lista.slice(0, 7);
+    }
+
+    const container = document.getElementById('barsContainer');
+    container.innerHTML = '';
+
+    if (lista.length === 0) {
+      container.innerHTML = `<div style="font-size:12px;color:#666;padding:8px 0;">No encontramos locales con ese nombre. Prueba con "Rosario", "Comedias" o "Beatas".</div>`;
+      return;
+    }
+
+    lista.forEach(bar => {
+      const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${bar.lat},${bar.lon}&travelmode=walking`;
+
+      const itemHTML = `
+        <div class="bar-card">
+          <div class="bar-details">
+            <div class="bar-title">
+              <span>📍</span> ${bar.nombre}
+            </div>
+            <div class="bar-address">${bar.direccion} – <strong>${formatearDistancia(bar.distancia)}</strong></div>
+            <span class="bar-tag">${bar.especialidad}</span>
+          </div>
+          <a href="${mapsUrl}" target="_blank" class="bar-go-btn">Ir ➔</a>
+        </div>
+      `;
+      container.innerHTML += itemHTML;
+    });
+
+    inicializarMapa(currentLat, currentLon, lista);
+  }
+
+  function mostrarPantallaChat(lat, lon, etiquetaModo, mensajeUsuario) {
+    currentLat = lat;
+    currentLon = lon;
+
+    const ahora = new Date();
+    const hora = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0');
+    document.getElementById('currentTime').textContent = `${hora} ✓✓`;
+    document.getElementById('locationModeLabel').textContent = etiquetaModo;
+    document.getElementById('userBubbleText').textContent = mensajeUsuario;
+
+    document.getElementById('loaderMsg').style.display = 'none';
+    document.getElementById('landingView').style.display = 'none';
+    document.getElementById('chatView').style.display = 'flex';
+
+    renderizarBares();
+  }
+
+  // 1. PASO PREVIO: PEDIR PERMISO EXPLÍCITO AL USUARIO ("¿Puedo activar tu GPS?")
+  function buscarConGPS() {
+    const modal = document.getElementById('gpsModal');
+    const errBox = document.getElementById('gpsErrorBox');
+    const btnConfirm = document.getElementById('btnConfirmarGPS');
+    errBox.style.display = 'none';
+    btnConfirm.disabled = false;
+    btnConfirm.innerHTML = '✓ Sí, activar mi GPS ahora';
+    modal.style.display = 'flex';
+  }
+
+  function cerrarModalGPS() {
+    document.getElementById('gpsModal').style.display = 'none';
+  }
+
+  function usarUbicacionDemoDesdeModal() {
+    cerrarModalGPS();
+    simularZona('centro', 36.7196, -4.4216, 'Calle Larios, Málaga (Modo Demo)');
+  }
+
+  // 2. ACTIVACIÓN REAL DEL SATÉLITE GPS TRAS ACEPTAR PERMISO
+  function confirmarYActivarGPS() {
+    const errBox = document.getElementById('gpsErrorBox');
+    const btnConfirm = document.getElementById('btnConfirmarGPS');
+
+    if (!navigator.geolocation) {
+      errBox.style.display = 'block';
+      errBox.textContent = "Tu navegador no soporta geolocalización GPS. Pulsa 'Probar sin GPS (Málaga Centro)'.";
+      return;
+    }
+
+    btnConfirm.disabled = true;
+    btnConfirm.innerHTML = '🛰️ Conectando satélite GPS...';
+    errBox.style.display = 'none';
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        cerrarModalGPS();
+        mostrarPantallaChat(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          "Asistente de Mahou • GPS Activo en tiempo real",
+          "📍 Mi ubicación GPS actual"
+        );
+      },
+      (error) => {
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = '↻ Reintentar activar GPS';
+        errBox.style.display = 'block';
+        if (error.code === 1) {
+          errBox.innerHTML = "⚠️ <strong>Permiso denegado:</strong> Has bloqueado la ubicación en tu navegador o tienes el GPS del móvil apagado. Actívalo en los ajustes de tu teléfono o prueba el modo Málaga Centro.";
+        } else if (error.code === 2) {
+          errBox.innerHTML = "⚠️ <strong>Señal GPS no disponible:</strong> Enciende la ubicación (GPS) en la barra superior de tu teléfono y vuelve a intentarlo.";
+        } else {
+          errBox.innerHTML = "⚠️ <strong>Tiempo agotado buscando satélite:</strong> Asegúrate de tener el GPS encendido o usa el botón de Málaga Centro para probar.";
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  // 2. SIMULACIÓN POR ZONAS DE MÁLAGA
+  function simularZona(zona, lat, lon, nombreLugar) {
+    currentFilter = 'todos';
+    actualizarChipsUI('chipTodos');
+    mostrarPantallaChat(
+      lat,
+      lon,
+      `Asistente de Mahou • ${nombreLugar}`,
+      `📍 Estoy en ${nombreLugar}`
+    );
+  }
+
+  // 3. ESCÁNER QR UNIVERSAL CON CÁMARA (iPhone + Android + PC)
+  async function abrirEscanerQR() {
+    const modal = document.getElementById('qrModal');
+    const video = document.getElementById('qrVideo');
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusText = document.getElementById('qrStatusText');
+    modal.style.display = 'flex';
+    statusText.textContent = "Iniciando cámara...";
+
+    try {
+      qrStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }
+      });
+      video.srcObject = qrStream;
+      video.setAttribute("playsinline", true);
+      await video.play();
+      statusText.textContent = "Encuadra el código QR de Ruta Mahou...";
+
+      qrScanInterval = setInterval(() => {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          canvas.height = video.videoHeight;
+          canvas.width = video.videoWidth;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          if (typeof jsQR !== 'undefined') {
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert"
+            });
+            if (code && code.data) {
+              statusText.style.color = "#25D366";
+              statusText.textContent = "¡QR Detectado! Conectando GPS...";
+              cerrarEscanerQR();
+              buscarConGPS();
+            }
+          }
+        }
+      }, 250);
+    } catch (err) {
+      statusText.textContent = "No se pudo acceder a la cámara (requiere HTTPS). Pulsa 'Simular QR Escaneado'.";
+    }
+  }
+
+  function cerrarEscanerQR() {
+    document.getElementById('qrModal').style.display = 'none';
+    if (qrScanInterval) clearInterval(qrScanInterval);
+    if (qrStream) {
+      qrStream.getTracks().forEach(track => track.stop());
+      qrStream = null;
+    }
+  }
+
+  function simularLecturaQR() {
+    cerrarEscanerQR();
+    buscarConGPS();
+  }
+
+  function actualizarChipsUI(activeId) {
+    ['chipTodos', 'chipRosarios', 'chipCentro'].forEach(id => {
+      document.getElementById(id).classList.remove('active');
+    });
+    document.getElementById(activeId).classList.add('active');
+  }
+
+  function filtrarLista(tipo) {
+    currentFilter = tipo;
+    if (tipo === 'todos') actualizarChipsUI('chipTodos');
+    if (tipo === 'rosario') actualizarChipsUI('chipRosarios');
+    if (tipo === 'centro') actualizarChipsUI('chipCentro');
+    renderizarBares(document.getElementById('chatSearchInput').value);
+  }
+
+  function buscarPorTexto(e) {
+    renderizarBares(e.target.value);
+  }
+
+  function ejecutarBusquedaChat() {
+    const val = document.getElementById('chatSearchInput').value;
+    if (val.trim() !== '') {
+      document.getElementById('userBubbleText').textContent = `🔍 Buscar: "${val}"`;
+      renderizarBares(val);
+    }
+  }
+
+  function volverPortada() {
+    document.getElementById('chatView').style.display = 'none';
+    document.getElementById('landingView').style.display = 'flex';
+  }
+</script>
+
+</body>
+</html>
